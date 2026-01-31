@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
-import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 
 function HomePage() {
-  const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
-  
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
+
   const [Ayahs, setAyahs] = useState([]);
   const [Sorah, setSorah] = useState([]);
   const [loadingAyahs, setLoadingAyahs] = useState(true);
@@ -11,7 +18,6 @@ function HomePage() {
   const [selectedSurah, setSelectedSurah] = useState(1);
   const [displayAyah, setDisplayAyah] = useState(true);
 
-  
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
   const normalizeArabic = (text) => {
@@ -46,18 +52,21 @@ function HomePage() {
       }
       return costs[s2.length];
     };
-    return (longer.length - editDistance(longer, shorter)) / parseFloat(longer.length);
+    return (
+      (longer.length - editDistance(longer, shorter)) /
+      parseFloat(longer.length)
+    );
   };
 
   useEffect(() => {
     if (!transcript || !Ayahs.verses) return;
     const spokenWords = transcript.trim().split(" ");
     const lastSpokenWord = normalizeArabic(spokenWords[spokenWords.length - 1]);
-    const allWords = Ayahs.verses.flatMap(v => v.text.split(" "));
+    const allWords = Ayahs.verses.flatMap((v) => v.text.split(" "));
     const targetWord = normalizeArabic(allWords[currentWordIndex]);
 
     if (calculateSimilarity(lastSpokenWord, targetWord) >= 0.4) {
-      setCurrentWordIndex(prev => prev + 1);
+      setCurrentWordIndex((prev) => prev + 1);
     }
   }, [transcript, Ayahs.verses]);
 
@@ -70,9 +79,9 @@ function HomePage() {
 
   const toggleListening = () => {
     if (listening) {
-        SpeechRecognition.stopListening();
+      SpeechRecognition.stopListening();
     } else {
-        SpeechRecognition.startListening({ continuous: true, language: "ar-SA" });
+      SpeechRecognition.startListening({ continuous: true, language: "ar-SA" });
     }
   };
 
@@ -82,26 +91,42 @@ function HomePage() {
 
   const fetchSorah = async () => {
     try {
-      const response = await fetch("https://alquran-api.pages.dev/api/quran?lang=en");
+      const response = await fetch(
+        "https://corsproxy.io/?" +
+          "https://alquran-api.pages.dev/api/quran?lang=en",
+      );
       const data = await response.json();
       setSorah(data);
-    } catch (error) { console.error("Error fetching sorahs:", error); } 
-    finally { setLoadingSorahs(false); }
+    } catch (error) {
+      console.error("Error fetching sorahs:", error);
+    } finally {
+      setLoadingSorahs(false);
+    }
   };
 
   const fetchAyahs = async (surahId) => {
     try {
       setLoadingAyahs(true);
-      const response = await fetch(`https://alquran-api.pages.dev/api/quran/surah/${surahId}?lang=ar`);
+      const response = await fetch(
+        "https://corsproxy.io/?" +
+          `https://alquran-api.pages.dev/api/quran/surah/${surahId}?lang=ar`,
+      );
       const data = await response.json();
       setAyahs(data);
       setCurrentWordIndex(0);
-    } catch (error) { console.error("Error fetching ayahs:", error); } 
-    finally { setLoadingAyahs(false); }
+    } catch (error) {
+      console.error("Error fetching ayahs:", error);
+    } finally {
+      setLoadingAyahs(false);
+    }
   };
 
-  useEffect(() => { fetchSorah(); }, []);
-  useEffect(() => { fetchAyahs(selectedSurah); }, [selectedSurah]);
+  useEffect(() => {
+    fetchSorah();
+  }, []);
+  useEffect(() => {
+    fetchAyahs(selectedSurah);
+  }, [selectedSurah]);
 
   const renderAyahs = () => {
     if (loadingAyahs) {
@@ -122,36 +147,38 @@ function HomePage() {
 
     return (
       <div className="overflow-y-scroll h-120 w-280 scroll-smooth [&::-webkit-scrollbar]:hidden px-5">
-           <div className="min-h-full flex items-center justify-center">
-                <p className="text-5xl font-serif text-white leading-loose tracking-wide text-center">
-                    {Ayahs.verses.map((verse) => (
-                        <span key={verse.id}>
-                           {verse.text.split(" ").map((word, i) => {
-                             const isRead = globalWordCounter < currentWordIndex;
-                             globalWordCounter++;
-                             return (
-                               <span 
-                                key={i} 
-                                className={`${(!displayAyah && !isRead) ? "blur-lg" : ""} ${(isRead && displayAyah) ? "bg-[rgba(48,33,162,0.24)] py-3 text-white" : "text-white"}`}
-                               >
-                                 {word}{" "}
-                               </span>
-                             )
-                           })}
-                            <span className="text-gray-400 mx-1 pr-3">
-                                ﴿{verse.id}﴾
-                            </span>{" "}
-                        </span>
-                    ))}
-                </p>
-           </div>
-       </div>
+        <div className="min-h-full flex items-center justify-center">
+          <p className="text-5xl font-serif text-white leading-loose tracking-wide text-center">
+            {Ayahs.verses.map((verse) => (
+              <span key={verse.id}>
+                {verse.text.split(" ").map((word, i) => {
+                  const isRead = globalWordCounter < currentWordIndex;
+                  globalWordCounter++;
+                  return (
+                    <span
+                      key={i}
+                      className={`${!displayAyah && !isRead ? "blur-lg" : ""} ${isRead && displayAyah ? "bg-[rgba(48,33,162,0.24)] py-3 text-white" : "text-white"}`}
+                    >
+                      {word}{" "}
+                    </span>
+                  );
+                })}
+                <span className="text-gray-400 mx-1 pr-3">
+                  ﴿{verse.id}﴾
+                </span>{" "}
+              </span>
+            ))}
+          </p>
+        </div>
+      </div>
     );
   };
 
   const sorahsOptions = () => {
     if (loadingSorahs) {
-      return <div className="w-70 h-11 bg-gray-300/60 rounded-md animate-pulse"></div>;
+      return (
+        <div className="w-70 h-11 bg-gray-300/60 rounded-md animate-pulse"></div>
+      );
     }
     return (
       <select
@@ -160,30 +187,53 @@ function HomePage() {
         className="w-70 h-11 p-2 border border-gray-200 rounded-md shadow-sm bg-gray-200 font-bold text-[19px]"
       >
         {Sorah.surahs.map((s) => (
-          <option key={s.id} value={s.id}>{s.name}</option>
+          <option key={s.id} value={s.id}>
+            {s.name}
+          </option>
         ))}
       </select>
     );
   };
 
   return (
-    <div dir="rtl" className="bg-[url('/bg8.jpeg')] h-screen bg-cover bg-center flex flex-col items-center justify-center gap-5">
+    <div
+      dir="rtl"
+      className="bg-[url('/bg8.jpeg')] h-screen bg-cover bg-center flex flex-col items-center justify-center gap-5"
+    >
       <div className="bg-[url('/bg6.gif')] bg-cover bg-center h-32 w-300 rounded-2xl flex items-center justify-between py-4 px-15">
-            <div>{sorahsOptions()}</div>
-            <div className="flex items-center gap-4 ">
-                <div onClick={toggleAyahDisplay}>
-                    {displayAyah ?
-                    (<img src="/eye.png" alt="Logo" className="h-9 w-9 mb-2 bg-gray-200 rounded-[10px] p-1 cursor-pointer"   /> ) 
-                    : (<img src="/hidden.png" alt="Logo" className="h-9 w-9 mb-2 bg-gray-200 rounded-[10px] p-1 cursor-pointer"   />
-                    )}
-                </div>
-                <div onClick={toggleListening}>
-                    {listening? 
-                    <img src="/mic.png" alt="Logo" className="h-9 w-9 mb-2 bg-blue-400 animate-pulse rounded-[10px] p-1 cursor-pointer"   />
-                  : <img src="/microphone.png" alt="Logo" className="h-9 w-9 mb-2 bg-gray-200 rounded-[10px] p-1 cursor-pointer"   />
-                  }
-                </div>
-            </div>
+        <div>{sorahsOptions()}</div>
+        <div className="flex items-center gap-4 ">
+          <div onClick={toggleAyahDisplay}>
+            {displayAyah ? (
+              <img
+                src="/eye.png"
+                alt="Logo"
+                className="h-9 w-9 mb-2 bg-gray-200 rounded-[10px] p-1 cursor-pointer"
+              />
+            ) : (
+              <img
+                src="/hidden.png"
+                alt="Logo"
+                className="h-9 w-9 mb-2 bg-gray-200 rounded-[10px] p-1 cursor-pointer"
+              />
+            )}
+          </div>
+          <div onClick={toggleListening}>
+            {listening ? (
+              <img
+                src="/mic.png"
+                alt="Logo"
+                className="h-9 w-9 mb-2 bg-blue-400 animate-pulse rounded-[10px] p-1 cursor-pointer"
+              />
+            ) : (
+              <img
+                src="/microphone.png"
+                alt="Logo"
+                className="h-9 w-9 mb-2 bg-gray-200 rounded-[10px] p-1 cursor-pointer"
+              />
+            )}
+          </div>
+        </div>
       </div>
       <div className="bg-[#0B1120] h-180 w-300 rounded-2xl shadow-xl flex flex-col gap-8 items-center justify-center font-bold pb-6">
         <img src="/b3.png" alt="Logo" className="h-34 w-157" />
