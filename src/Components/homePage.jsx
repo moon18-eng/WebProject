@@ -82,7 +82,7 @@ function HomePage() {
 
   const fetchSorah = async () => {
     try {
-      const response = await fetch(encodeURIComponent("https://alquran-api.pages.dev/api/quran?lang=en"));
+      const response = await fetch("https://alquran-api.pages.dev/api/quran?lang=en");
       const data = await response.json();
       setSorah(data);
     } catch (error) { console.error("Error fetching sorahs:", error); } 
@@ -92,7 +92,7 @@ function HomePage() {
   const fetchAyahs = async (surahId) => {
     try {
       setLoadingAyahs(true);
-      const response = await fetch(encodeURIComponent(`https://alquran-api.pages.dev/api/quran/surah/${surahId}?lang=ar`));
+      const response = await fetch(`https://alquran-api.pages.dev/api/quran/surah/${surahId}?lang=ar`);
       const data = await response.json();
       setAyahs(data);
       setCurrentWordIndex(0);
